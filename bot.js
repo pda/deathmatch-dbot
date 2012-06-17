@@ -69,6 +69,8 @@
       count++;
       window.target = Game.world.players.filter(function(p) {
         return !p.you && !p.dead;
+      }).sort(function(a, b) {
+        return b.health - a.health;
       }).pop();
       window.me = Game.world.players.filter(function(p) {
         return p.you;

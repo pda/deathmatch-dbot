@@ -62,7 +62,11 @@ window.begin = ->
   count = 0
   targetLoop = ->
     count++
-    window.target = Game.world.players.filter((p) -> !p.you && !p.dead).pop()
+    window.target = Game.world.players.
+      filter((p) -> !p.you && !p.dead).
+      sort((a, b) -> b.health - a.health).
+      pop()
+
     window.me = Game.world.players.filter((p) -> p.you)[0]
     window.wallLines = Game.world.walls
 
