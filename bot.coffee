@@ -54,13 +54,24 @@ window.begin = ->
         context.lineTo(screenMe.x + nx * 100, screenMe.y + ny * 100)
       else if mode == "strafe-cw"
         context.lineTo(screenMe.x - nx * 100, screenMe.y - ny * 100)
+      context.strokeStyle = "rgba(255, 0, 0, 0.5)"
+      context.lineWidth = 2
+      context.stroke()
+    if window.shootTarget && window.screenTarget
+      context.beginPath()
+      context.moveTo(screenTarget.x, screenTarget.y)
+      context.lineTo(shootTarget.x, shootTarget.y)
       context.strokeStyle = "green"
       context.lineWidth = 2
       context.stroke()
+      context.fillStyle = "rgba(0, 196, 0, 0.5)"
+      context.fillRect(shootTarget.x - 8, shootTarget.y - 8, 16, 16)
     context.font = "48px Menlo"
     context.textAlign = "center"
     context.fillStyle = "rgba(128, 64, 64, 0.5)"
     context.fillText(mode, width / 2, 100)
+
+  targetHistory = { id: null, point: null }
 
   count = 0
   targetLoop = ->
@@ -87,7 +98,7 @@ window.begin = ->
 
     window.screenMe = playerPoint(me)
     window.gridMe = screenToGrid(screenMe)
-    screenTarget = playerPoint(target)
+    window.screenTarget = playerPoint(target)
     gridTarget = screenToGrid(screenTarget)
 
     window.path = aStar(gridMe, gridTarget, walls, 256)
@@ -131,7 +142,21 @@ window.begin = ->
     if count % 10 == 0
       scatterFactor = Math.max(0, distance - 50) / 4
       scatter = Math.random() * scatterFactor - (scatterFactor / 2)
-      Game.ws.send JSON.stringify({type: "shoot", x: target.pos.x + scatter, y: target.pos.y + scatter})
+
+      leadFactor = distance * 0.01
+
+      if targetHistory.id == target.id
+        st = screenTarget
+        window.shootTarget = new Point(
+          st.x + (st.x - targetHistory.point.x) * leadFactor,
+          st.y + (st.y - targetHistory.point.y) * leadFactor
+        )
+      else
+        window.shootTarget = screenTarget
+
+      targetHistory = {id: target.id, point: screenTarget}
+
+      Game.ws.send JSON.stringify({type: "shoot", x: shootTarget.x, y: shootTarget.y})
 
   window.setInterval(targetLoop, 10)
 
