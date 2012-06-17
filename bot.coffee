@@ -78,6 +78,14 @@ window.begin = ->
     context.fillStyle = "rgba(128, 64, 64, 0.5)"
     context.fillText(mode, width / 2, 100)
 
+  # http://cgafaq.info/wiki/Intersecting_line_segments_(2D)
+  lineIntersects = (a, b, c, d) ->
+    r = ((a.y - c.y) * (d.x - c.x) - (a.x - c.x) * (d.y - c.y)) /
+      ((b.x - a.x) * (d.y - c.y) - (b.y - a.y) * (d.x - c.x))
+    s = ((a.y - c.y) * (b.x - a.x) - (a.x - c.x) * (b.y - a.y)) /
+      ((b.x - a.x) * (d.y - c.y) - (b.y - a.y) * (d.x - c.x))
+    return (0 <= r && r <= 1) && (0 <= s && s <= 1)
+
   targetHistory = { id: null, point: null }
 
   count = 0
@@ -135,7 +143,18 @@ window.begin = ->
 
       targetHistory = {id: target.id, point: screenTarget}
 
-      Game.ws.send JSON.stringify({type: "shoot", x: shootTarget.x, y: shootTarget.y})
+      # line of sight detection.
+      window.lineOfSight = true
+      for line in wallLines
+        wallA = new Point(line.a.x, line.a.y)
+        wallB = new Point(line.b.x, line.b.y)
+        if lineIntersects(screenMe, shootTarget, wallA, wallB)
+          window.mode = "seek"
+          window.lineOfSight = false
+          break
+
+      if window.lineOfSight
+        Game.ws.send JSON.stringify({type: "shoot", x: shootTarget.x, y: shootTarget.y})
 
     # Path-find and move!
     window.path = aStar(gridMe, gridTarget, walls, 128)

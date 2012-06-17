@@ -4,7 +4,7 @@
   GRID_RES = 32;
 
   window.begin = function() {
-    var canvas, context, count, gridToScreen, height, modes, nextMode, playerPoint, screenToGrid, setMode, targetHistory, targetLoop, walls, width;
+    var canvas, context, count, gridToScreen, height, lineIntersects, modes, nextMode, playerPoint, screenToGrid, setMode, targetHistory, targetLoop, walls, width;
     canvas = document.getElementById("canvas");
     context = canvas.getContext("2d");
     width = canvas.width;
@@ -84,13 +84,19 @@
       context.fillStyle = "rgba(128, 64, 64, 0.5)";
       return context.fillText(mode, width / 2, 100);
     });
+    lineIntersects = function(a, b, c, d) {
+      var r, s;
+      r = ((a.y - c.y) * (d.x - c.x) - (a.x - c.x) * (d.y - c.y)) / ((b.x - a.x) * (d.y - c.y) - (b.y - a.y) * (d.x - c.x));
+      s = ((a.y - c.y) * (b.x - a.x) - (a.x - c.x) * (b.y - a.y)) / ((b.x - a.x) * (d.y - c.y) - (b.y - a.y) * (d.x - c.x));
+      return (0 <= r && r <= 1) && (0 <= s && s <= 1);
+    };
     targetHistory = {
       id: null,
       point: null
     };
     count = 0;
     targetLoop = function() {
-      var distance, dx, dy, gridTarget, keys, leadFactor, line, point, scatter, scatterFactor, st, x, y, _i, _len, _ref, _ref2, _ref3, _ref4;
+      var distance, dx, dy, gridTarget, keys, leadFactor, line, point, scatter, scatterFactor, st, wallA, wallB, x, y, _i, _j, _len, _len2, _ref, _ref2, _ref3, _ref4;
       count++;
       window.me = Game.world.players.filter(function(p) {
         return p.you;
@@ -144,11 +150,24 @@
           id: target.id,
           point: screenTarget
         };
-        Game.ws.send(JSON.stringify({
-          type: "shoot",
-          x: shootTarget.x,
-          y: shootTarget.y
-        }));
+        window.lineOfSight = true;
+        for (_j = 0, _len2 = wallLines.length; _j < _len2; _j++) {
+          line = wallLines[_j];
+          wallA = new Point(line.a.x, line.a.y);
+          wallB = new Point(line.b.x, line.b.y);
+          if (lineIntersects(screenMe, shootTarget, wallA, wallB)) {
+            window.mode = "seek";
+            window.lineOfSight = false;
+            break;
+          }
+        }
+        if (window.lineOfSight) {
+          Game.ws.send(JSON.stringify({
+            type: "shoot",
+            x: shootTarget.x,
+            y: shootTarget.y
+          }));
+        }
       }
       window.path = aStar(gridMe, gridTarget, walls, 128);
       if (path.length <= 1) return;
