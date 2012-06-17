@@ -26,9 +26,12 @@ window.begin = ->
     "strafe-cw"
   ]
 
-  mode = null
+  window.mode = null
+  setMode = (mode) ->
+    Game.ws.send JSON.stringify({type: "name", name: "bot: #{mode}"})
+    window.mode = mode
   nextMode = ->
-    mode = modes[Math.floor(Math.random() * modes.length)]
+    setMode(modes[Math.floor(Math.random() * modes.length)])
     setTimeout(nextMode, Math.random() * 2000)
   nextMode()
 
@@ -83,7 +86,7 @@ window.begin = ->
     if path.length <= 1
       return
     if path.length < 4 && !mode.match(/strafe/)
-      window.mode = ["strafe-cw", "strafe-ccw"][Math.floor(Math.random() * 2)]
+      setMode(["strafe-cw", "strafe-ccw"][Math.floor(Math.random() * 2)])
 
     dx = target.pos.x - me.pos.x
     dy = target.pos.y - me.pos.y

@@ -4,7 +4,7 @@
   GRID_RES = 32;
 
   window.begin = function() {
-    var canvas, context, count, gridToScreen, height, mode, modes, nextMode, screenToGrid, targetLoop, walls, width;
+    var canvas, context, count, gridToScreen, height, modes, nextMode, screenToGrid, setMode, targetLoop, walls, width;
     canvas = document.getElementById("canvas");
     context = canvas.getContext("2d");
     width = canvas.width;
@@ -18,9 +18,16 @@
     window.path = [];
     walls = new PointSet();
     modes = ["avoid", "seek", "seek", "strafe-ccw", "strafe-ccw", "strafe-cw", "strafe-cw"];
-    mode = null;
+    window.mode = null;
+    setMode = function(mode) {
+      Game.ws.send(JSON.stringify({
+        type: "name",
+        name: "bot: " + mode
+      }));
+      return window.mode = mode;
+    };
     nextMode = function() {
-      mode = modes[Math.floor(Math.random() * modes.length)];
+      setMode(modes[Math.floor(Math.random() * modes.length)]);
       return setTimeout(nextMode, Math.random() * 2000);
     };
     nextMode();
@@ -88,7 +95,7 @@
       window.path = aStar(myPoint, targetPoint, walls, 256);
       if (path.length <= 1) return;
       if (path.length < 4 && !mode.match(/strafe/)) {
-        window.mode = ["strafe-cw", "strafe-ccw"][Math.floor(Math.random() * 2)];
+        setMode(["strafe-cw", "strafe-ccw"][Math.floor(Math.random() * 2)]);
       }
       dx = target.pos.x - me.pos.x;
       dy = target.pos.y - me.pos.y;
