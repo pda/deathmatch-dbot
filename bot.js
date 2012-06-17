@@ -4,7 +4,7 @@
   GRID_RES = 32;
 
   window.begin = function() {
-    var canvas, context, count, gridToScreen, height, lineIntersects, modes, nextMode, playerPoint, screenToGrid, setMode, targetHistory, targetLoop, walls, width;
+    var canvas, context, count, drawLine, gridToScreen, height, lineIntersects, modes, nextMode, playerPoint, screenToGrid, setMode, targetHistory, targetLoop, walls, width;
     canvas = document.getElementById("canvas");
     context = canvas.getContext("2d");
     width = canvas.width;
@@ -17,6 +17,15 @@
     };
     gridToScreen = function(point) {
       return new Point(point.x * GRID_RES, point.y * GRID_RES);
+    };
+    drawLine = function(c, from, to, style, width) {
+      if (width == null) width = 1;
+      c.strokeStyle = style;
+      c.lineWidth = width;
+      c.beginPath();
+      c.moveTo(from.x, from.y);
+      c.lineTo(to.x, to.y);
+      return c.stroke();
     };
     window.path = [];
     walls = new PointSet();
@@ -62,22 +71,12 @@
         context.stroke();
       }
       if (window.shootTarget && window.screenTarget) {
-        context.beginPath();
-        context.moveTo(screenTarget.x, screenTarget.y);
-        context.lineTo(shootTarget.x, shootTarget.y);
-        context.strokeStyle = "green";
-        context.lineWidth = 2;
-        context.stroke();
+        drawLine(context, screenTarget, shootTarget, "green", 2);
         context.fillStyle = "rgba(0, 196, 0, 0.5)";
         context.fillRect(shootTarget.x - 8, shootTarget.y - 8, 16, 16);
       }
       if (window.shootTarget && window.screenMe) {
-        context.beginPath();
-        context.moveTo(screenMe.x, screenMe.y);
-        context.lineTo(shootTarget.x, shootTarget.y);
-        context.strokeStyle = "rgba(0, 196, 0, 0.5)";
-        context.lineWidth = 1;
-        context.stroke();
+        drawLine(context, screenMe, shootTarget, "rgba(0, 196, 0, 0.5)", 1);
       }
       context.font = "48px Menlo";
       context.textAlign = "center";

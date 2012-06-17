@@ -15,6 +15,14 @@ window.begin = ->
   gridToScreen = (point) ->
     new Point(point.x * GRID_RES, point.y * GRID_RES)
 
+  drawLine = (c, from, to, style, width = 1) ->
+    c.strokeStyle = style
+    c.lineWidth = width
+    c.beginPath()
+    c.moveTo(from.x, from.y)
+    c.lineTo(to.x, to.y)
+    c.stroke()
+
   window.path = []
 
   walls = new PointSet()
@@ -48,31 +56,17 @@ window.begin = ->
       context.fillStyle = "rgba(128, 128, 128, 0.2)"
       context.fillRect(p.x, p.y, GRID_RES, GRID_RES)
     if window.nx && window.ny && window.gridMe && mode.match(/strafe/)
-      context.beginPath()
-      context.moveTo(screenMe.x, screenMe.y)
       if mode == "strafe-ccw"
-        context.lineTo(screenMe.x + nx * 100, screenMe.y + ny * 100)
+        to = screenMe.x + nx * 100, screenMe.y + ny * 100
       else if mode == "strafe-cw"
-        context.lineTo(screenMe.x - nx * 100, screenMe.y - ny * 100)
-      context.strokeStyle = "rgba(255, 0, 0, 0.5)"
-      context.lineWidth = 2
-      context.stroke()
+        to = screenMe.x - nx * 100, screenMe.y - ny * 100
+      drawLine(context, screenMe, to, "rgba(255, 0, 0, 0.5)", 2)
     if window.shootTarget && window.screenTarget
-      context.beginPath()
-      context.moveTo(screenTarget.x, screenTarget.y)
-      context.lineTo(shootTarget.x, shootTarget.y)
-      context.strokeStyle = "green"
-      context.lineWidth = 2
-      context.stroke()
+      drawLine(context, screenTarget, shootTarget, "green", 2)
       context.fillStyle = "rgba(0, 196, 0, 0.5)"
       context.fillRect(shootTarget.x - 8, shootTarget.y - 8, 16, 16)
     if window.shootTarget && window.screenMe
-      context.beginPath()
-      context.moveTo(screenMe.x, screenMe.y)
-      context.lineTo(shootTarget.x, shootTarget.y)
-      context.strokeStyle = "rgba(0, 196, 0, 0.5)"
-      context.lineWidth = 1
-      context.stroke()
+      drawLine(context, screenMe, shootTarget, "rgba(0, 196, 0, 0.5)", 1)
     context.font = "48px Menlo"
     context.textAlign = "center"
     context.fillStyle = "rgba(128, 64, 64, 0.5)"
