@@ -46,7 +46,7 @@
       for (_j = 0, _len2 = _ref.length; _j < _len2; _j++) {
         point = _ref[_j];
         p = gridToScreen(point);
-        context.fillStyle = "rgba(128, 128, 128, 0.5)";
+        context.fillStyle = "rgba(128, 128, 128, 0.2)";
         context.fillRect(p.x, p.y, GRID_RES, GRID_RES);
       }
       if (window.nx && window.ny && window.gridMe && mode.match(/strafe/)) {
