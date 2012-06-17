@@ -123,7 +123,7 @@ window.begin = ->
     window.ny = +dx / distance
 
     # Shoot!
-    if count % 10 == 0
+    if count % 5 == 0
       scatterFactor = Math.max(0, distance - 50) / 4
       scatter = Math.random() * scatterFactor - (scatterFactor / 2)
 
