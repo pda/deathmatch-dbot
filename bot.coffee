@@ -90,7 +90,12 @@ window.begin = ->
       sort((a, b) -> b.health - a.health).
       pop()
 
-    if !target then return
+    window.screenMe = playerPoint(me)
+    window.gridMe = screenToGrid(screenMe)
+
+    if !target
+      window.path = []
+      return
 
     if !window.wallLines
       window.wallLines = Game.world.walls
@@ -103,8 +108,6 @@ window.begin = ->
           for x in [line.a.x..line.b.x] by GRID_RES
             walls.add(new Point(Math.floor(x / GRID_RES), Math.floor(line.a.y / GRID_RES)))
 
-    window.screenMe = playerPoint(me)
-    window.gridMe = screenToGrid(screenMe)
     window.screenTarget = playerPoint(target)
     gridTarget = screenToGrid(screenTarget)
 

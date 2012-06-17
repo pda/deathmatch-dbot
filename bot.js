@@ -100,7 +100,12 @@
       }).sort(function(a, b) {
         return b.health - a.health;
       }).pop();
-      if (!target) return;
+      window.screenMe = playerPoint(me);
+      window.gridMe = screenToGrid(screenMe);
+      if (!target) {
+        window.path = [];
+        return;
+      }
       if (!window.wallLines) {
         window.wallLines = Game.world.walls;
         walls = new PointSet;
@@ -118,8 +123,6 @@
           }
         }
       }
-      window.screenMe = playerPoint(me);
-      window.gridMe = screenToGrid(screenMe);
       window.screenTarget = playerPoint(target);
       gridTarget = screenToGrid(screenTarget);
       dx = target.pos.x - me.pos.x;
