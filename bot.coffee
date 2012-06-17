@@ -66,6 +66,13 @@ window.begin = ->
       context.stroke()
       context.fillStyle = "rgba(0, 196, 0, 0.5)"
       context.fillRect(shootTarget.x - 8, shootTarget.y - 8, 16, 16)
+    if window.shootTarget && window.screenMe
+      context.beginPath()
+      context.moveTo(screenMe.x, screenMe.y)
+      context.lineTo(shootTarget.x, shootTarget.y)
+      context.strokeStyle = "rgba(0, 196, 0, 0.5)"
+      context.lineWidth = 1
+      context.stroke()
     context.font = "48px Menlo"
     context.textAlign = "center"
     context.fillStyle = "rgba(128, 64, 64, 0.5)"
