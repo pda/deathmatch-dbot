@@ -101,18 +101,39 @@ window.begin = ->
     window.screenTarget = playerPoint(target)
     gridTarget = screenToGrid(screenTarget)
 
-    window.path = aStar(gridMe, gridTarget, walls, 256)
-
-    if path.length <= 1
-      return
-    if path.length < 4 && !mode.match(/strafe/)
-      setMode(["strafe-cw", "strafe-ccw"][Math.floor(Math.random() * 2)])
-
     dx = target.pos.x - me.pos.x
     dy = target.pos.y - me.pos.y
     distance = Math.sqrt(dx * dx + dy * dy)
     window.nx = -dy / distance
     window.ny = +dx / distance
+
+    # Shoot!
+    if count % 10 == 0
+      scatterFactor = Math.max(0, distance - 50) / 4
+      scatter = Math.random() * scatterFactor - (scatterFactor / 2)
+
+      leadFactor = distance * 0.01
+
+      if targetHistory.id == target.id
+        st = screenTarget
+        window.shootTarget = new Point(
+          st.x + (st.x - targetHistory.point.x) * leadFactor,
+          st.y + (st.y - targetHistory.point.y) * leadFactor
+        )
+      else
+        window.shootTarget = screenTarget
+
+      targetHistory = {id: target.id, point: screenTarget}
+
+      Game.ws.send JSON.stringify({type: "shoot", x: shootTarget.x, y: shootTarget.y})
+
+    # Path-find and move!
+    window.path = aStar(gridMe, gridTarget, walls, 128)
+
+    if path.length <= 1
+      return
+    if path.length < 4 && !mode.match(/strafe/)
+      setMode(["strafe-cw", "strafe-ccw"][Math.floor(Math.random() * 2)])
 
     point = path[1]
 
@@ -139,24 +160,6 @@ window.begin = ->
       if ny < 0 then keys.push("down")
 
     Game.ws.send JSON.stringify({type: "move", keys: keys})
-    if count % 10 == 0
-      scatterFactor = Math.max(0, distance - 50) / 4
-      scatter = Math.random() * scatterFactor - (scatterFactor / 2)
-
-      leadFactor = distance * 0.01
-
-      if targetHistory.id == target.id
-        st = screenTarget
-        window.shootTarget = new Point(
-          st.x + (st.x - targetHistory.point.x) * leadFactor,
-          st.y + (st.y - targetHistory.point.y) * leadFactor
-        )
-      else
-        window.shootTarget = screenTarget
-
-      targetHistory = {id: target.id, point: screenTarget}
-
-      Game.ws.send JSON.stringify({type: "shoot", x: shootTarget.x, y: shootTarget.y})
 
   window.setInterval(targetLoop, 10)
 
