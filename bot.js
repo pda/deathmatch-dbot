@@ -169,7 +169,7 @@
           }));
         }
       }
-      window.path = aStar(gridMe, gridTarget, walls, 128);
+      window.path = aStar(gridMe, gridTarget, walls, 256);
       if (path.length <= 1) return;
       if (path.length < 8 && !mode.match(/strafe/)) {
         setMode(["strafe-cw", "strafe-ccw"][Math.floor(Math.random() * 2)]);

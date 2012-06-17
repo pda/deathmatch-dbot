@@ -157,7 +157,7 @@ window.begin = ->
         Game.ws.send JSON.stringify({type: "shoot", x: shootTarget.x, y: shootTarget.y})
 
     # Path-find and move!
-    window.path = aStar(gridMe, gridTarget, walls, 128)
+    window.path = aStar(gridMe, gridTarget, walls, 256)
 
     if path.length <= 1
       return
