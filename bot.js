@@ -4,13 +4,16 @@
   GRID_RES = 32;
 
   window.begin = function() {
-    var canvas, context, count, gridToScreen, height, modes, nextMode, screenToGrid, setMode, targetLoop, walls, width;
+    var canvas, context, count, gridToScreen, height, modes, nextMode, playerPoint, screenToGrid, setMode, targetLoop, walls, width;
     canvas = document.getElementById("canvas");
     context = canvas.getContext("2d");
     width = canvas.width;
     height = canvas.height;
-    screenToGrid = function(x, y) {
-      return new Point(Math.floor(x / GRID_RES), Math.floor(y / GRID_RES));
+    playerPoint = function(player) {
+      return new Point(player.pos.x, player.pos.y);
+    };
+    screenToGrid = function(point) {
+      return new Point(Math.floor(point.x / GRID_RES), Math.floor(point.y / GRID_RES));
     };
     gridToScreen = function(point) {
       return new Point(point.x * GRID_RES, point.y * GRID_RES);
@@ -46,13 +49,13 @@
         context.fillStyle = "rgba(128, 128, 128, 0.5)";
         context.fillRect(p.x, p.y, GRID_RES, GRID_RES);
       }
-      if (window.nx && window.ny && window.myPoint && mode.match(/strafe/)) {
+      if (window.nx && window.ny && window.gridMe && mode.match(/strafe/)) {
         context.beginPath();
-        context.moveTo(myScreenPoint.x, myScreenPoint.y);
+        context.moveTo(screenMe.x, screenMe.y);
         if (mode === "strafe-ccw") {
-          context.lineTo(myScreenPoint.x + nx * 100, myScreenPoint.y + ny * 100);
+          context.lineTo(screenMe.x + nx * 100, screenMe.y + ny * 100);
         } else if (mode === "strafe-cw") {
-          context.lineTo(myScreenPoint.x - nx * 100, myScreenPoint.y - ny * 100);
+          context.lineTo(screenMe.x - nx * 100, screenMe.y - ny * 100);
         }
         context.strokeStyle = "green";
         context.lineWidth = 2;
@@ -65,36 +68,39 @@
     });
     count = 0;
     targetLoop = function() {
-      var distance, dx, dy, keys, line, point, scatter, scatterFactor, targetPoint, x, y, _i, _len, _ref, _ref2, _ref3, _ref4;
+      var distance, dx, dy, gridTarget, keys, line, point, scatter, scatterFactor, screenTarget, x, y, _i, _len, _ref, _ref2, _ref3, _ref4;
       count++;
+      window.me = Game.world.players.filter(function(p) {
+        return p.you;
+      })[0];
       window.target = Game.world.players.filter(function(p) {
         return !p.you && !p.dead;
       }).sort(function(a, b) {
         return b.health - a.health;
       }).pop();
-      window.me = Game.world.players.filter(function(p) {
-        return p.you;
-      })[0];
-      window.wallLines = Game.world.walls;
-      walls = new PointSet;
-      for (_i = 0, _len = wallLines.length; _i < _len; _i++) {
-        line = wallLines[_i];
-        if (line.a.x === line.b.x) {
-          for (y = _ref = line.a.y, _ref2 = line.b.y; _ref <= _ref2 ? y <= _ref2 : y >= _ref2; y += GRID_RES) {
-            walls.add(new Point(Math.floor(line.a.x / GRID_RES), Math.floor(y / GRID_RES)));
+      if (!target) return;
+      if (!window.wallLines) {
+        window.wallLines = Game.world.walls;
+        walls = new PointSet;
+        for (_i = 0, _len = wallLines.length; _i < _len; _i++) {
+          line = wallLines[_i];
+          if (line.a.x === line.b.x) {
+            for (y = _ref = line.a.y, _ref2 = line.b.y; _ref <= _ref2 ? y <= _ref2 : y >= _ref2; y += GRID_RES) {
+              walls.add(new Point(Math.floor(line.a.x / GRID_RES), Math.floor(y / GRID_RES)));
+            }
           }
-        }
-        if (line.a.y === line.b.y) {
-          for (x = _ref3 = line.a.x, _ref4 = line.b.x; _ref3 <= _ref4 ? x <= _ref4 : x >= _ref4; x += GRID_RES) {
-            walls.add(new Point(Math.floor(x / GRID_RES), Math.floor(line.a.y / GRID_RES)));
+          if (line.a.y === line.b.y) {
+            for (x = _ref3 = line.a.x, _ref4 = line.b.x; _ref3 <= _ref4 ? x <= _ref4 : x >= _ref4; x += GRID_RES) {
+              walls.add(new Point(Math.floor(x / GRID_RES), Math.floor(line.a.y / GRID_RES)));
+            }
           }
         }
       }
-      window.myScreenPoint = new Point(me.pos.x, me.pos.y);
-      window.myPoint = screenToGrid(me.pos.x, me.pos.y);
-      if (!target) return;
-      targetPoint = screenToGrid(target.pos.x, target.pos.y);
-      window.path = aStar(myPoint, targetPoint, walls, 256);
+      window.screenMe = playerPoint(me);
+      window.gridMe = screenToGrid(screenMe);
+      screenTarget = playerPoint(target);
+      gridTarget = screenToGrid(screenTarget);
+      window.path = aStar(gridMe, gridTarget, walls, 256);
       if (path.length <= 1) return;
       if (path.length < 4 && !mode.match(/strafe/)) {
         setMode(["strafe-cw", "strafe-ccw"][Math.floor(Math.random() * 2)]);
@@ -107,15 +113,15 @@
       point = path[1];
       keys = [];
       if (mode === "seek") {
-        if (point.x > myPoint.x) keys.push("right");
-        if (point.x < myPoint.x) keys.push("left");
-        if (point.y < myPoint.y) keys.push("up");
-        if (point.y > myPoint.y) keys.push("down");
+        if (point.x > gridMe.x) keys.push("right");
+        if (point.x < gridMe.x) keys.push("left");
+        if (point.y < gridMe.y) keys.push("up");
+        if (point.y > gridMe.y) keys.push("down");
       } else if (mode === "avoid") {
-        if (point.x > myPoint.x) keys.push("left");
-        if (point.x < myPoint.x) keys.push("right");
-        if (point.y < myPoint.y) keys.push("down");
-        if (point.y > myPoint.y) keys.push("up");
+        if (point.x > gridMe.x) keys.push("left");
+        if (point.x < gridMe.x) keys.push("right");
+        if (point.y < gridMe.y) keys.push("down");
+        if (point.y > gridMe.y) keys.push("up");
       } else if (mode === "strafe-ccw") {
         if (nx > 0) keys.push("right");
         if (nx < 0) keys.push("left");
