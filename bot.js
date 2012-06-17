@@ -139,7 +139,7 @@
       if (count % 10 === 0) {
         scatterFactor = Math.max(0, distance - 50) / 4;
         scatter = Math.random() * scatterFactor - (scatterFactor / 2);
-        leadFactor = Math.random() * distance * 0.01;
+        leadFactor = Math.random() * distance * 0.02;
         if (targetHistory.id === target.id) {
           st = screenTarget;
           window.shootTarget = new Point(st.x + (st.x - targetHistory.point.x) * leadFactor, st.y + (st.y - targetHistory.point.y) * leadFactor);

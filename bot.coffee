@@ -130,7 +130,7 @@ window.begin = ->
       scatterFactor = Math.max(0, distance - 50) / 4
       scatter = Math.random() * scatterFactor - (scatterFactor / 2)
 
-      leadFactor = (Math.random() * distance * 0.01)
+      leadFactor = (Math.random() * distance * 0.02)
 
       if targetHistory.id == target.id
         st = screenTarget
