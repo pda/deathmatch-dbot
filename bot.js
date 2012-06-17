@@ -171,7 +171,7 @@
       }
       window.path = aStar(gridMe, gridTarget, walls, 128);
       if (path.length <= 1) return;
-      if (path.length < 4 && !mode.match(/strafe/)) {
+      if (path.length < 8 && !mode.match(/strafe/)) {
         setMode(["strafe-cw", "strafe-ccw"][Math.floor(Math.random() * 2)]);
       }
       point = path[1];
