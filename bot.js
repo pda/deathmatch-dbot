@@ -4,7 +4,7 @@
   GRID_RES = 32;
 
   window.begin = function() {
-    var canvas, context, count, drawLine, gridToScreen, height, lineIntersects, modes, nextMode, playerPoint, screenToGrid, setMode, targetHistory, targetLoop, walls, width;
+    var canvas, context, count, drawBox, drawLine, gridToScreen, height, lineIntersects, modes, nextMode, playerPoint, screenToGrid, setMode, targetHistory, targetLoop, walls, width;
     canvas = document.getElementById("canvas");
     context = canvas.getContext("2d");
     width = canvas.width;
@@ -17,6 +17,10 @@
     };
     gridToScreen = function(point) {
       return new Point(point.x * GRID_RES, point.y * GRID_RES);
+    };
+    drawBox = function(c, x, y, width, height, style) {
+      c.fillStyle = style;
+      return c.fillRect(x, y, width, height);
     };
     drawLine = function(c, from, to, style, width) {
       if (width == null) width = 1;
@@ -44,36 +48,31 @@
     };
     nextMode();
     Game.drawCallbacks.push(function(context) {
-      var p, point, _i, _j, _len, _len2, _ref;
+      var p, point, to, x, y, _i, _j, _len, _len2, _ref;
       for (_i = 0, _len = path.length; _i < _len; _i++) {
         point = path[_i];
         p = gridToScreen(point);
-        context.fillStyle = "rgba(255, 0, 0, 0.4)";
-        context.fillRect(p.x, p.y, GRID_RES, GRID_RES);
+        drawBox(context, p.x, p.y, GRID_RES, GRID_RES, "rgba(255, 0, 0, 0.4)");
       }
       _ref = walls.values();
       for (_j = 0, _len2 = _ref.length; _j < _len2; _j++) {
         point = _ref[_j];
         p = gridToScreen(point);
-        context.fillStyle = "rgba(128, 128, 128, 0.2)";
-        context.fillRect(p.x, p.y, GRID_RES, GRID_RES);
+        drawBox(context, p.x, p.y, GRID_RES, GRID_RES, "rgba(128, 128, 128, 0.2)");
       }
       if (window.nx && window.ny && window.gridMe && mode.match(/strafe/)) {
-        context.beginPath();
-        context.moveTo(screenMe.x, screenMe.y);
         if (mode === "strafe-ccw") {
-          context.lineTo(screenMe.x + nx * 100, screenMe.y + ny * 100);
+          to = new Point(screenMe.x + nx * 100, screenMe.y + ny * 100);
         } else if (mode === "strafe-cw") {
-          context.lineTo(screenMe.x - nx * 100, screenMe.y - ny * 100);
+          to = new Point(screenMe.x - nx * 100, screenMe.y - ny * 100);
         }
-        context.strokeStyle = "rgba(255, 0, 0, 0.5)";
-        context.lineWidth = 2;
-        context.stroke();
+        drawLine(context, screenMe, to, "rgba(255, 0, 0, 0.5)", 2);
       }
       if (window.shootTarget && window.screenTarget) {
         drawLine(context, screenTarget, shootTarget, "green", 2);
-        context.fillStyle = "rgba(0, 196, 0, 0.5)";
-        context.fillRect(shootTarget.x - 8, shootTarget.y - 8, 16, 16);
+        x = shootTarget.x - GRID_RES / 4;
+        y = shootTarget.y - GRID_RES / 4;
+        drawBox(context, x, y, GRID_RES / 2, GRID_RES / 2, "rgba(0, 196, 0, 0.5)");
       }
       if (window.shootTarget && window.screenMe) {
         drawLine(context, screenMe, shootTarget, "rgba(0, 196, 0, 0.5)", 1);
@@ -135,7 +134,7 @@
       distance = Math.sqrt(dx * dx + dy * dy);
       window.nx = -dy / distance;
       window.ny = +dx / distance;
-      if (count % 10 === 0) {
+      if (count % 5 === 0) {
         scatterFactor = Math.max(0, distance - 50) / 4;
         scatter = Math.random() * scatterFactor - (scatterFactor / 2);
         leadFactor = Math.random() * distance * 0.02;

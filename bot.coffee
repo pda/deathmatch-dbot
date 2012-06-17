@@ -15,6 +15,10 @@ window.begin = ->
   gridToScreen = (point) ->
     new Point(point.x * GRID_RES, point.y * GRID_RES)
 
+  drawBox = (c, x, y, width, height, style) ->
+    c.fillStyle = style
+    c.fillRect(x, y, width, height)
+
   drawLine = (c, from, to, style, width = 1) ->
     c.strokeStyle = style
     c.lineWidth = width
@@ -49,22 +53,21 @@ window.begin = ->
   Game.drawCallbacks.push (context) ->
     for point in path
       p = gridToScreen(point)
-      context.fillStyle = "rgba(255, 0, 0, 0.4)"
-      context.fillRect(p.x, p.y, GRID_RES, GRID_RES)
+      drawBox(context, p.x, p.y, GRID_RES, GRID_RES, "rgba(255, 0, 0, 0.4)")
     for point in walls.values()
       p = gridToScreen(point)
-      context.fillStyle = "rgba(128, 128, 128, 0.2)"
-      context.fillRect(p.x, p.y, GRID_RES, GRID_RES)
+      drawBox(context, p.x, p.y, GRID_RES, GRID_RES, "rgba(128, 128, 128, 0.2)")
     if window.nx && window.ny && window.gridMe && mode.match(/strafe/)
       if mode == "strafe-ccw"
-        to = screenMe.x + nx * 100, screenMe.y + ny * 100
+        to = new Point(screenMe.x + nx * 100, screenMe.y + ny * 100)
       else if mode == "strafe-cw"
-        to = screenMe.x - nx * 100, screenMe.y - ny * 100
+        to = new Point(screenMe.x - nx * 100, screenMe.y - ny * 100)
       drawLine(context, screenMe, to, "rgba(255, 0, 0, 0.5)", 2)
     if window.shootTarget && window.screenTarget
       drawLine(context, screenTarget, shootTarget, "green", 2)
-      context.fillStyle = "rgba(0, 196, 0, 0.5)"
-      context.fillRect(shootTarget.x - 8, shootTarget.y - 8, 16, 16)
+      x = shootTarget.x - GRID_RES/ 4
+      y = shootTarget.y - GRID_RES / 4
+      drawBox(context, x, y, GRID_RES / 2, GRID_RES / 2, "rgba(0, 196, 0, 0.5)")
     if window.shootTarget && window.screenMe
       drawLine(context, screenMe, shootTarget, "rgba(0, 196, 0, 0.5)", 1)
     context.font = "48px Menlo"
