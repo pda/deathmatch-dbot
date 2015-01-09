@@ -29,7 +29,7 @@ window.begin = ->
 
   window.path = []
 
-  walls = new PointSet()
+  walls = []
 
   modes = [
     "avoid"
@@ -54,7 +54,7 @@ window.begin = ->
     for point in path
       p = gridToScreen(point)
       drawBox(context, p.x, p.y, GRID_RES, GRID_RES, "rgba(255, 0, 0, 0.4)")
-    for point in walls.values()
+    for point in walls
       p = gridToScreen(point)
       drawBox(context, p.x, p.y, GRID_RES, GRID_RES, "rgba(128, 128, 128, 0.2)")
     if window.nx && window.ny && window.gridMe && mode.match(/strafe/)
@@ -104,14 +104,14 @@ window.begin = ->
 
     if !window.wallLines
       window.wallLines = Game.world.walls
-      walls = new PointSet
+      walls = []
       for line in wallLines
         if line.a.x == line.b.x # vertical
           for y in [line.a.y..line.b.y] by GRID_RES
-            walls.add(new Point(Math.floor(line.a.x / GRID_RES), Math.floor(y / GRID_RES)))
+            walls.push(new Point(Math.floor(line.a.x / GRID_RES), Math.floor(y / GRID_RES)))
         if line.a.y == line.b.y # horizontal
           for x in [line.a.x..line.b.x] by GRID_RES
-            walls.add(new Point(Math.floor(x / GRID_RES), Math.floor(line.a.y / GRID_RES)))
+            walls.push(new Point(Math.floor(x / GRID_RES), Math.floor(line.a.y / GRID_RES)))
 
     window.screenTarget = playerPoint(target)
     gridTarget = screenToGrid(screenTarget)
@@ -154,7 +154,7 @@ window.begin = ->
         Game.ws.send JSON.stringify({type: "shoot", x: shootTarget.x, y: shootTarget.y})
 
     # Path-find and move!
-    window.path = aStar(gridMe, gridTarget, walls, 256)
+    window.path = new AStar().search(gridMe, gridTarget, walls, 256)
 
     if path.length <= 1
       return
@@ -192,6 +192,11 @@ window.begin = ->
 (->
   script = document.createElement("script")
   script.addEventListener("load", begin)
-  script.src = "http://paulbookpro.local:8000/js/astar.js"
+  script.src = "http://paulbook.local:8000/js/point.js"
+  document.body.appendChild(script)
+
+  script = document.createElement("script")
+  script.addEventListener("load", begin)
+  script.src = "http://paulbook.local:8000/js/a_star.js"
   document.body.appendChild(script)
 )()
